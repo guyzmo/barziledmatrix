@@ -10,12 +10,12 @@ Refactoring Process
  * TODO:
   * [x] Reorganize files
   * [x] Create template for new engine
-  * [ ] Define new backend interface
-  * [ ] Improve engine interface
-  * [ ] Implement main application "sketch"
+  * [x] Define new backend interface
+  * [x] Improve engine interface
+  * [x] Implement main application "sketch"
+  * [ ] Test that stuff
   * [ ] Implement support of different applications
   * [ ] Define communication protocol
-
 
 Original help file
 ------------------
@@ -99,3 +99,16 @@ Original help file
     * #include <TimerOne.h>
     *
     ********************************************************************************************************************/
+
+License
+-------
+
+To Be Discussed with Barzilouik
+
+Copyright
+---------
+
+(c)2012 Barzilouik, barzilouik at gmail dot com
+(c)2014 Guyzmo, guyzmo at leloop dot org
+
+<3
