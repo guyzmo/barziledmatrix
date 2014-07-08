@@ -47,6 +47,82 @@
  * 12 L0
  ********************************************************************************************************************/
 
+
+#include "disp_sayag.h"
+
+#include <Arduino.h>
+#include <digitalWriteFast.h>
+
+SayagLEDDisplayBackend::SayagLEDDisplayBackend(uint8_t e, uint8_t c, uint8_t de, const uint8_t data[7], uint8_t delay) :
+    pin_enable(e),
+    pin_clock(c),
+    pin_data_enable(de),
+    refresh_delay(delay)
+{
+    memcpy(pin_data, data, 7);
+}
+
+// setup
+void SayagLEDDisplayBackend::begin() {
+    // set the digital pin as output:
+    pinMode(pin_enable, OUTPUT);
+    pinMode(pin_clock,  OUTPUT);
+    pinMode(pin_data_enable,  OUTPUT);
+
+    for(int i=0; i<8; ++i) {
+        pinMode(pin_data[i], OUTPUT);
+    }
+}
+
+void SayagLEDDisplayBackend::clock_pulse(uint8_t udelay) const {
+    digitalWriteFast(pin_clock, HIGH);
+    delayMicroseconds(udelay);
+    digitalWriteFast(pin_clock, LOW);
+    delayMicroseconds(udelay);
+}
+
+void SayagLEDDisplayBackend::disable() const {
+    // TURN DISPLAY OFF
+    digitalWriteFast( pin_enable, HIGH);
+}
+
+void SayagLEDDisplayBackend::enable() const {
+    // TURN DISPLAY ON
+    digitalWrite(pin_enable, LOW);
+}
+
+// run
+void SayagLEDDisplayBackend::render() const {
+    uint8_t line = 0;
+    disable();
+    for (uint16_t i=0; i<get_size(); ++i) {
+        if ((i%get_width()) == 0) {
+            digitalWriteFast(pin_data[line], LOW);
+        }
+        for (uint8_t b=0; b<8; ++b) {
+            if ((display_buffer[i]&b)==b)
+                digitalWrite(pin_data_enable, HIGH);
+            else
+                digitalWrite(pin_data_enable, LOW);
+        }
+        clock_pulse(1);
+        if ((i%get_width()) == 0) {
+            digitalWriteFast(pin_data[line], HIGH);
+            ++line;
+        }
+    }
+    enable();
+}
+
+void SayagLEDDisplayBackend::update_buffer(const char* newbuf) {
+    memcpy(display_buffer, newbuf, get_size());
+}
+
+void SayagLEDDisplayBackend::change_byte(uint8_t x, uint8_t y, uint8_t v) {
+    display_buffer[ x + y * get_width()] = v;
+}
+
+#if 0
 // #ifdef HORIZONTAL_DISPLAY
 
 #include <digitalWriteFast.h>
@@ -64,32 +140,6 @@
 
 // PRIVATE API
 
-void SayagLEDDisplayBackend::renderline(int linenb, int bitplane) {
-    // TURN DISPLAY OFF
-    digitalWriteFast( pin_enable, HIGH);
-
-    // a line is made of 18 bytes
-    for(int i=0; i < XMAX; i++) {
-        if (virtualdisplay[bitplane][ XMAX - i - 1 ] & (1 << linenb)) {
-            digitalWrite( pin_data, HIGH)
-        } else {
-            digitalWrite( pin_data, LOW)
-        }
-        clock_pulse();
-    }
-    // TURN DISPLAY ON
-    digitalWrite(pin_enable, LOW);
-}
-
-void SayagLEDDisplayBackend::renderalllines(int delayms, int bitplane) {
-    for(int i=0; i < YMAX ; i++) {  // a line is made of 18 bytes
-        digitalWriteFast(pins[i], LOW);
-        renderline( YMAX - i  , bitplane );
-        digitalWriteFast(pins[i], HIGH);
-        delayMicroseconds( delayms );
-
-    }
-}
 
 // PUBLIC API
 
@@ -102,23 +152,8 @@ void SayagLEDDisplayBackend::set_refresh_delay(uint8_t d) {
 }
 
 void SayagLEDDisplayBackend::begin() {
-    // set the digital pin as output:
-    pinMode(pin_enable, OUTPUT);
-    pinMode(pin_clock,  OUTPUT);
-    pinMode(pin_data,  OUTPUT);
-
-    for(int i=0; i<8; i++) {
-        pinMode(pin_data[i], OUTPUT);
-    }
 }
 
-
-void SayagLEDDisplayBackend::clock_pulse(int udelay=0) {
-    digitalWriteFast(pin_clock, HIGH);
-    delayMicroseconds(udelay);
-    digitalWriteFast(pin_clock, LOW);
-    delayMicroseconds(udelay);
-}
 
 void SayagLEDDisplayBackend::render() {
     render( this->refresh_delay );
@@ -180,3 +215,4 @@ void SayagLEDDisplayBackend::testdisplay() {
     render();
 }
 
+#endif

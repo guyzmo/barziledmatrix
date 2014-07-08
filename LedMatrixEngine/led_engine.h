@@ -1,12 +1,13 @@
+#ifndef _LED_ENGINE_H_
+#define _LED_ENGINE_H_
 
-#include "backend/backend.h"
+#include <backend/backend.h>
 
 class LedEngine {
     LedDisplayBackend* backend;
+
     public:
-        LedEngine(LedDisplayBackend* b) {
-            backend = b;
-        }
+        LedEngine(LedDisplayBackend* b);
 
         void begin();
 
@@ -16,3 +17,4 @@ class LedEngine {
 
 };
 
+#endif

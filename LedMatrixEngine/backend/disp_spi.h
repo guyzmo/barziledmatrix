@@ -32,7 +32,6 @@
  * Digital pin 6 :
     -> load   (grey)
  
- 
  ********************************************************************************************************************/
 
 #include "backend.h"
@@ -40,31 +39,55 @@
 #include <SPI.h>
 #include <digitalWriteFast.h>
 
-// #if (defined MULTI_SEGMENT_DISPLAY_FULLSCREEN && defined OUTPUT_SPI)
+#define SCREEN_HEIGHT 96 // pixels
+#define SCREEN_WIDTH 64 // pixels
 
-class SPILEDDisplayBackend : Backend {
+#define BUFFER_SIZE SCREEN_WIDTH*SCREEN_HEIGHT/8
+
+class SPILEDDisplayBackend : public LedDisplayBackend {
     uint8_t pin_load;
     uint8_t pin_clock;
     uint8_t pin_data;
 
-    uint8_t bitplanes=0;
-    uint8_t refresh_delay=REFRESH_DELAY_DEFAULT;
+    uint8_t bitplanes;
+    uint8_t refresh_delay;
 
-    uint8_t dispState=0;
+    bool fast;
 
-    void handleDisplay();
-    void render_all_lines(int delayms, int bitplane);
+    uint8_t display_buffer[BUFFER_SIZE];
+
+    void clock_pulse(uint8_t udelay=0) const;
+    void disable() const;
+    void enable() const;
+
     public:
-        SPILEDDisplayBackend(uint8_t l, uint8_t c, uint8_t d) :
-            pin_load(l), pin_clock(c), pin_data(d) { }
+        SPILEDDisplayBackend(uint8_t l, uint8_t c, uint8_t d, uint8_t delay);
 
-        void set_bitplanes(uint8_t bp);
-        void set_refresh_delay(uint8_t d);
+        // setup
+        void begin();
+        void begin(bool fast);
 
-        void begin(bool fast=false);
-        void clock_pulse(int udelay=0) const;
-        void render();
-        void render(int PAUSE, int option);
+        // run
+        void render() const;
+
+        // getters
+        uint8_t get_width() const {
+            return SCREEN_WIDTH;
+        }
+        uint8_t get_height() const {
+            return SCREEN_HEIGHT;
+        }
+        uint16_t get_size() const {
+            return BUFFER_SIZE;
+        }
+
+        // operations
+        void update_buffer(const char* buffer);
+        void change_byte(uint8_t x, uint8_t y, uint8_t v);
 };
+
+#undef SCREEN_HEIGHT
+#undef SCREEN_WIDTH
+#undef BUFFER_SIZE
 
 #endif

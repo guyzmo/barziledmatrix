@@ -20,6 +20,60 @@
  * #PORTD = B10101000; // sets digital pins 7,5,3 HIGH
  ********************************************************************************************************************/
 
+#include "disp_green.h"
+
+#include <Arduino.h>
+#include <digitalWriteFast.h>
+
+GreenLEDDisplayBackend::GreenLEDDisplayBackend(uint8_t e, uint8_t c, uint8_t d, uint8_t delay) :
+    pin_enable(e),
+    pin_clock(c),
+    pin_data(d),
+    refresh_delay(delay) { }
+
+// setup
+void GreenLEDDisplayBackend::begin() {
+    pinModeFast(pin_clock, OUTPUT);
+    pinModeFast(pin_data, OUTPUT);
+    pinModeFast(pin_enable, OUTPUT);
+}
+
+void GreenLEDDisplayBackend::clock_pulse(uint8_t udelay) const {
+    digitalWriteFast(pin_clock, HIGH);
+    delayMicroseconds(udelay);
+    digitalWriteFast(pin_clock, LOW);
+    delayMicroseconds(udelay);
+}
+
+void GreenLEDDisplayBackend::disable() const {
+    // TURN DISPLAY OFF
+    digitalWriteFast( pin_enable, HIGH);
+}
+
+void GreenLEDDisplayBackend::enable() const {
+    // TURN DISPLAY ON
+    digitalWrite(pin_enable, LOW);
+}
+
+// run
+void GreenLEDDisplayBackend::render() const {
+  disable();
+  for( uint16_t i=0 ; i < get_size() ; ++i )
+    shiftOut(pin_data, pin_clock, MSBFIRST, display_buffer[i] );
+  enable();
+  delayMicroseconds( refresh_delay );
+}
+
+void GreenLEDDisplayBackend::update_buffer(const char* newbuf) {
+    memcpy(display_buffer, newbuf, get_size());
+}
+
+void GreenLEDDisplayBackend::change_byte(uint8_t x, uint8_t y, uint8_t v) {
+    display_buffer[ x + y * get_width()] = v;
+}
+
+
+#if 0
 //#ifdef VERTICAL_DISPLAY
 //#if (defined MULTI_SEGMENT_DISPLAY)
 
@@ -160,3 +214,4 @@ void rendermono() {
   render_all_lines( 3000, 0 );
 }
 
+#endif

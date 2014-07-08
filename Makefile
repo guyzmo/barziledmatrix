@@ -52,7 +52,7 @@ USERLIBS =
 
 # Libs in local directory for current project
 # uncomment value if you have libs in directories inside current project's directory
-LOCALLIBS = $(patsubst applet/,,$(wildcard */))
+LOCALLIBS = $(patsubst applet/,,$(wildcard */)) LedMatrixEngine/backend
 
 # Arduino model:
 # You can set this to be a string, such as uno, atmega328...
@@ -230,7 +230,7 @@ CINCS = -I$(ARDUINO_CORE) -I$(ARDUINO_VARIANT) \
 #CSTANDARD = -std=gnu99
 CDEBUG = -g$(DEBUG)
 #CWARN = -Wall -Wstrict-prototypes
-CTUNING = -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums
+CTUNING = -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -std=c++11
 #CEXTRA = -Wa,-adhlns=$(<:.c=.lst)
 
 # Extra flags to match what the Arduino 1.0 IDE is doing:

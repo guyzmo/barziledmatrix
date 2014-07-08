@@ -54,42 +54,52 @@
 
 #include "backend.h"
 
-class SayagLEDDisplayBackend : Backend {
+#define SCREEN_HEIGHT 144 // pixels
+#define SCREEN_WIDTH 64 // pixels
+
+#define BUFFER_SIZE SCREEN_WIDTH*SCREEN_HEIGHT/8
+
+class SayagLEDDisplayBackend : public LedDisplayBackend {
     uint8_t pin_enable;
     uint8_t pin_clock;
     uint8_t pin_data_enable;
-
     uint8_t pin_data[7];
 
-    uint8_t bitplanes=0;
-    uint8_t refresh_delay=REFRESH_DELAY_DEFAULT;
+    uint8_t refresh_delay;
 
-    uint8_t dispState=0;
+    uint8_t display_buffer[BUFFER_SIZE];
 
-    void render_all_lines(int delayms, int bitplane);
+    void clock_pulse(uint8_t udelay=0) const;
+    void disable() const;
+    void enable() const;
+
     public:
-        static const int XMAX = 144;
-        static const int YMAX = 7;
-        static const int DMAXSIZE = 144;
-        static const int REFRESH_DELAY_DEFAULT 20;
+        SayagLEDDisplayBackend(uint8_t e, uint8_t c, uint8_t de, const uint8_t data[7], uint8_t delay);
 
-        SayagLEDDisplayBackend(uint8_t e, uint8_t c, uint8_t e, uint8_t data[7]) :
-            pin_enable(e), pin_clock(c), pin_data_enable(e) {
-                for (uint8_t i=0; i<7; ++i)
-                    pin_data[i] = data[i];
+        // setup
+        void begin();
+
+        // run
+        void render() const;
+
+        // getters
+        uint8_t get_width() const {
+            return SCREEN_WIDTH;
+        }
+        uint8_t get_height() const {
+            return SCREEN_HEIGHT;
+        }
+        uint16_t get_size() const {
+            return BUFFER_SIZE;
         }
 
-        void set_bitplanes(uint8_t bp);
-        void set_refresh_delay(uint8_t d);
-
-        void begin(bool fast=false);
-        void clock_pulse(int udelay=0) const;
-        void render();
-        void render(int PAUSE, int option);
-
-        // XXX higher level function, to be removed
-        testdisplay();
-
+        // operations
+        void update_buffer(const char* buffer);
+        void change_byte(uint8_t x, uint8_t y, uint8_t v);
 };
+
+#undef SCREEN_HEIGHT
+#undef SCREEN_WIDTH
+#undef BUFFER_SIZE
 
 #endif
